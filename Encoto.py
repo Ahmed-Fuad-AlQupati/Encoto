@@ -4,80 +4,34 @@ import hashlib
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 
-def arrPrint(arr, x, y):
-    for I in range(y):
-        for i in range(x):
-            print(arr[I][i], end=" ") 
-        print()
-
-def shuf(ph:list, hashMap:list, step=0):
+def matrixShuf(ph:list, hashMap:list, step=0):
+    
     y = ph.__len__()    
     x = len(ph[0])    
-    r = x / (32 / y)     
-    
-    for s in range((x*y)//2):
-        
-        # shuffle x down
+    r = x / (hashMap.__len__() / y)    
+    phMatrix = np.array(ph)
+
+    for go in range(x): 
+
+        # shuffle rows down
         p = 0
-        i = 0  
+        i = 0             
+        while(p < 32):                    
+            phMatrix[round(i % (y-1)),:], phMatrix[round((i + hashMap[p%32] + step) % (y-1)),:] = phMatrix[round((i + hashMap[p%32] + step) % (y-1)),:].copy(), phMatrix[round(i % (y-1)),:].copy()           
+            p += 1
+            i += r
+
+
+        # shuffle Columns down
+        p = 0      
         j = 0    
-        while(i < y):        
-            while(p < 32):            
-                ph[i][round(j)], ph[i][round((j + hashMap[p] + step) % (x-1))] = ph[i][round((j + hashMap[p] + step) % (x-1))], ph[i][round(j)]
-                if(j + r > x):
-                    j = (j + r) % (x-1)
-                    p += 1
-                    break
-                j = (j + r) % (x-1)
-                p += 1        
-            i += 1     
-        # shuffle x up
-        p = 0
-        i = y-1  
-        j = 0                
-        while(i >= 0):        
-            while(p < 32):            
-                ph[i][round(j)], ph[i][round((j + hashMap[p] + step) % (x-1))] = ph[i][round((j + hashMap[p] + step) % (x-1))], ph[i][round(j)]
-                if(j + r > x):
-                    j = (j + r) % (x-1)
-                    p += 1
-                    break
-                j = (j + r) % (x-1)
-                p += 1        
-            i -= 1
-        
-        # shuffle y down   
-        p = 0
-        i = 0  
-        j = 0                
-        while(j < x):        
-            while(True):
-                ph[round(i)][j], ph[round((i+hashMap[p] + step) % (y-1))][j] = ph[round((i+hashMap[p] + step) % (y-1))][j], ph[round(i)][j]
-                if(i + r > x):
-                    i = (i + r) % (y-1)
-                    p = (p + 1) % (hashMap.__len__()-1)
-                    break
-                i = (i + r) % (y-1)
-                p = (p + 1) % (hashMap.__len__()-1)
-            j += 1
-    
-        # shuffle y up
-        p = 0
-        i = 0  
-        j = x-1               
-        while(j >= 0):        
-            while(p < 32):
-                ph[round(i)][j], ph[round((i+hashMap[p] + step) % (y-1))][j] = ph[round((i+hashMap[p] + step) % (y-1))][j], ph[round(i)][j]
-                if(i + r > x):
-                    i = (i + r) % (y-1)
-                    p += 1
-                    break
-                i = (i + r) % (y-1)
-                p += 1          
-            j -= 1  
-        step += 1    
-    #if(step < x*y):
-        #shuf(ph, hashMap, step+1)
+        while(p < 32):        
+            phMatrix[:,round(j % (x-1))], phMatrix[:,round((j + hashMap[p%32] + step) % (x-1))] = phMatrix[:,round((j + hashMap[p%32] + step) % (x-1))].copy(), phMatrix[:,round(j % (x-1))].copy()
+            p += 1
+            j += r
+        step += 1
+    ph.clear()    
+    ph.extend( phMatrix.tolist() )     
 
 
 def enc(ph:list,key):
@@ -88,7 +42,7 @@ def enc(ph:list,key):
     for ch in key:                
         move.append(ord(ch) % x)
     
-    shuf(ph, move)
+    matrixShuf(ph, move)
 
 
 
@@ -111,18 +65,22 @@ def list2Matrix(imgList):
     imgMatrix = np.array(imgList)
     return imgMatrix                     
     
-key = "asd"
+key = "asdafaf"
 hashKey = hashlib.md5(key.encode()).hexdigest()
 
-img = openImageAsMatrix()
-img = matrix2List(img)
-enc(img, hashKey)
-
- 
-
-
-
 asd = tk.Tk()
+
+try:
+    img = openImageAsMatrix()
+    img = matrix2List(img)
+    enc(img, hashKey)
+
+except:
+    exit()
+
+
+
+
 
 img = list2Matrix(img)
 

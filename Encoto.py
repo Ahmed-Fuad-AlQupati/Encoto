@@ -1,7 +1,7 @@
 from PIL import Image, ImageTk
-import numpy as np
-import hashlib
-import tkinter as tk
+from numpy import array,uint8
+from hashlib import md5
+from tkinter import Tk, Frame, Canvas, Label, Entry, Button
 from tkinter.messagebox import showerror
 from tkinter.filedialog import askopenfilename
 
@@ -12,7 +12,7 @@ def matrixShuf(ph:list, hashMap:list, step=0):
     y = ph.__len__()    
     x = len(ph[0])    
     r = x / (hashMap.__len__() / y)    
-    phMatrix = np.array(ph)    
+    phMatrix = array(ph)    
     
     for go in range(x):         
         
@@ -43,7 +43,7 @@ def matrixUnShuf(ph:list, hashMap:list, step=0):
     y = ph.__len__()    
     x = len(ph[0])    
     r = x / (hashMap.__len__() / y)    
-    phMatrix = np.array(ph)        
+    phMatrix = array(ph)        
     step = x-1    
     for go in range(x): 
 
@@ -77,7 +77,7 @@ def enc(ph:list):
     y = ph.__len__()
     x = len(ph[0])    
     move = []
-    hashKey = hashlib.md5(key.get().encode()).hexdigest()    
+    hashKey = md5(key.get().encode()).hexdigest()    
             
     for ch in hashKey:                
         move.append(ord(ch) % x)
@@ -95,7 +95,7 @@ def dec(ph:list):
     y = ph.__len__()
     x = len(ph[0])    
     move = []
-    hashKey = hashlib.md5(key.get().encode()).hexdigest()    
+    hashKey = md5(key.get().encode()).hexdigest()    
     
     for ch in hashKey:                
         move.append(ord(ch) % x)    
@@ -108,7 +108,7 @@ def matrix2List(imgMatrix):
     return imgList
 
 def list2Matrix(imgList):
-    imgMatrix = np.array(imgList)
+    imgMatrix = array(imgList)
     return imgMatrix  
 
 
@@ -122,7 +122,7 @@ def openImageAsMatrix():
     path = askopenfilename(title = "Select Photo", filetypes = fileTypes)
     if(path):             
         imgPil = Image.open(path)
-        imgMatrix = np.array(imgPil, dtype=np.uint8)
+        imgMatrix = array(imgPil, dtype=uint8)
         imgList = matrix2List(imgMatrix)
         showImageCanvas(imgMatrix)
 
@@ -130,67 +130,50 @@ def openImageAsMatrix():
 def scaleImage(img:Image, maxX,maxY):
     x,y = img.size
     aspRatio = y/x
-    if(y > maxY):
-        y = maxY
-        x = int(y / aspRatio)
-    elif(x > maxX):
-        x = maxX
-        y = int(x / aspRatio)
-    
+    y = maxY
+    x = int(y / aspRatio)
     return img.resize((x,y),)
 
 
 
 def showImageCanvas(imgMatrix):
     global pilImage, tkImage, can
-    pilImage = Image.fromarray(np.uint8(imgMatrix))
-    pilImage = scaleImage(pilImage, 700,500)
+    pilImage = Image.fromarray(uint8(imgMatrix))    
+    pilImage = scaleImage(pilImage, 700,450)
     tkImage = ImageTk.PhotoImage(pilImage)    
     can.create_image(0,0, anchor="nw", image=tkImage)
     
-    
-
-    
-    
-        
-    
-    
     #pilImage.save("path\\enc.png")
+
 
 def restore():         
     dec(img, hashKey)
     imgMatrix = list2Matrix(img)
     showImageCanvas(imgMatrix)
 
+#######################
 
-
-
-
-
-
-
-
-asd = tk.Tk()
+asd = Tk()
 
 asd.geometry(f"800x600+{asd.winfo_screenwidth()//2-400}+{asd.winfo_screenheight()//2-300}")
 asd.resizable(False, False)
 asd.title(":Encoto:")
 
-top = tk.Frame(asd, bg="#333")
+top = Frame(asd, bg="#333")
 top.pack(fill="x")
-body = tk.Frame(asd, bg="#333")
+body = Frame(asd, bg="#333")
 body.pack(fill="both", expand=True)
-low = tk.Frame(asd, bg="#345")
+low = Frame(asd, bg="#345")
 low.pack(fill="x")
 
-tk.Label(top, text=":: Encoto ::", font=("",32,""), bg="#333", fg="#fea" ).pack()
-can = tk.Canvas(body, bg="#333", borderwidth=10)
+Label(top, text=":: Encoto ::", font=("",32,""), bg="#333", fg="#fea" ).pack()
+can = Canvas(body, bg="#333", borderwidth=10)
 can.pack(expand=True, fill="both")
-tk.Button(low, text = "Choose Image", font=("", 12, "italic"), command=openImageAsMatrix).pack(side="right" ,padx=(0,10))
-tk.Button(low, text = "<< Encrypting >>", font=("", 12, "bold"), command=(lambda:enc(imgList))).pack(side="left", padx=(10,0))
-tk.Button(low, text = ">> Decrypting <<", font=("", 12, "bold"), command=(lambda:dec(imgList))).pack(side="left", padx=(10,0))
-tk.Label(low, text="Encr Key:",font=("", 10, "bold"), bg="#345", fg="#fea").pack(anchor="s",expand=True, padx=(0,120))
-key = tk.Entry(low,font=("", 12, "bold"))
+Button(low, text = "Choose Image", font=("", 12, "italic"), command=openImageAsMatrix).pack(side="right" ,padx=(0,10))
+Button(low, text = "<< Encrypting >>", font=("", 12, "bold"), command=(lambda:enc(imgList))).pack(side="left", padx=(10,0))
+Button(low, text = ">> Decrypting <<", font=("", 12, "bold"), command=(lambda:dec(imgList))).pack(side="left", padx=(10,0))
+Label(low, text="Encr Key:",font=("", 10, "bold"), bg="#345", fg="#fea").pack(anchor="s",expand=True, padx=(0,120))
+key = Entry(low,font=("", 12, "bold"))
 key.pack(anchor="center",expand=True, pady=(0,35))
 
 asd.mainloop()

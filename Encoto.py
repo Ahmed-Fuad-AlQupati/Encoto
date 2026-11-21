@@ -45,7 +45,8 @@ def matrixUnShuf(ph:list, hashMap:list, step=0):
     r = x / (hashMap.__len__() / y)    
     phMatrix = np.array(ph)        
     step = x-1    
-    for go in range(x):         
+    for go in range(x): 
+
         # Unshuffle Columns down
         p = 31      
         j = r * 31    

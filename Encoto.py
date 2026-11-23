@@ -1,10 +1,10 @@
 from PIL import Image, ImageTk
 from numpy import array,uint8, uint16
 from hashlib import md5
-from tkinter import Tk, Frame, Canvas, Label, Entry, Button
-from tkinter.messagebox import showerror
+from tkinter import Tk, Frame, Canvas, Label, Entry, Button, Checkbutton
+from tkinter.ttk import Progressbar
+from tkinter.messagebox import showerror, showinfo, askokcancel
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-
 
 def matrixShuf(ph:list, hashMap:list, step=0):
     global imgList, imgMatrix
@@ -14,8 +14,7 @@ def matrixShuf(ph:list, hashMap:list, step=0):
     r = x / (hashMap.__len__() / y)    
     phMatrix = array(ph)    
     
-    for go in range(x):         
-        
+    for go in range(x):                  
         # shuffle rows down
         p = 0
         i = 0             
@@ -100,7 +99,10 @@ def dec(ph:list):
     hashKey = md5(key.get().encode()).hexdigest()    
     
     for ch in hashKey:                
-        move.append(ord(ch) % x)    
+        move.append(ord(ch) % x) 
+    
+    
+    
     matrixUnShuf(ph, move)
     showImageCanvas(imgMatrix)
 
@@ -115,29 +117,34 @@ def list2Matrix(imgList):
 
 
 def openImageAsMatrix():
-    global imgMatrix, imgList
-    
-    extensions = ["*.jpg; *.jpeg", "*.png"]
-    fileTypes = []
-    for i in extensions:
-        fileTypes.append((i[1:], "JPG or PNG Image"))
-        
+    global saved
+    if(not saved):
+        if(not askokcancel("Open Photo", "You Didn't Save The Photo Yet, The Changes will be lost.\nDo You Open Another Photo")):
+            return
+    global imgMatrix, imgList, fileName
     path = askopenfilename(title = "Select Photo", filetypes = (("Image Files","*.png;*.jpg;*.jpeg"),))
     if(path):             
         imgPil = Image.open(path)
         imgMatrix = array(imgPil, dtype=uint8)
         imgList = matrix2List(imgMatrix)
         showImageCanvas(imgMatrix)
+        encButton.config(state="n")
+        decButton.config(state="n")
+        saveButton.config(state="n")
+        saved = False
+        fileName = str(path).split("/")[-1]
+        key.focus()
+        
 
 def saveImagefromMatrix():
-    global imgMatrix        
-    path = asksaveasfilename(title="Save Photo", filetypes=(("PNG Image files","*.png"),))
+    global imgMatrix, saved      
+    path = asksaveasfilename(initialfile=fileName,title="Save Photo", filetypes=(("PNG Image files","*.png"),),)
     if(path):                
-        pilImage = Image.fromarray(uint8(imgMatrix))
+        pilImage = Image.fromarray(uint8(imgMatrix))        
+        pilImage.save(path.replace(".png", "")+".png") 
+        showinfo("Save Photo", "The Photo Saved Successfully.")
+        saved = True
         
-        pilImage.save(path.replace(".png", "")+".png")
-    #pilImage.save("path\\enc.png")
-
 def scaleImage(img:Image, maxX,maxY):
     x,y = img.size
     aspRatio = y/x
@@ -161,39 +168,63 @@ def restore():
     imgMatrix = list2Matrix(img)
     showImageCanvas(imgMatrix)
 
+def showKey():
+    if(key.cget("show")):
+        key.config(show="")
+        cKey.deselect()
+    else:
+        key.config(show="*")
+        cKey.select()
+    
+        
+
 #######################
-
-asd = Tk()
-
-asd.geometry(f"800x600+{asd.winfo_screenwidth()//2-400}+{asd.winfo_screenheight()//2-300}")
-asd.resizable(False, False)
-asd.title(":Encoto:")
-top = Frame(asd, bg="#333")
-top.pack(fill="x")
-body = Frame(asd, bg="#333")
-body.pack(fill="both", expand=True)
-low = Frame(asd, bg="#345")
-low.pack(fill="x")
-
-Label(top, text=":: Encoto ::", font=("",32,""), bg="#333", fg="#fea" ).pack()
-
-can = Canvas(body, bg="#333", borderwidth=10)
-can.pack(expand=True, fill="both")
-
-selectAndSaveFrame = Frame(low, bg="#345")
-selectAndSaveFrame.pack(side="right", padx=10)
-Button(selectAndSaveFrame, text = "Choose Photo", font=("", 12, "italic"), width=13, command=openImageAsMatrix).pack()
-Button(selectAndSaveFrame, text = "Save Photo", font=("", 12, "italic"), width=13,   command=saveImagefromMatrix).pack(pady=(5,0))
-
-encDecFrame = Frame(low, bg="#345")
-encDecFrame.pack(side="left", padx=10)
-Button(encDecFrame, text = "<< Encrypting >>", font=("", 12, "bold"), command=(lambda:enc(imgList))).pack(side="left", padx=(10,0))
-Button(encDecFrame, text = ">> Decrypting <<", font=("", 12, "bold"), command=(lambda:dec(imgList))).pack(side="left", padx=(10,0))
-
-keyFrame = Frame(low, bg="#345")
-keyFrame.pack( padx=10, pady=30)
-Label(keyFrame, text="Encr Key:",font=("", 10, "bold"), bg="#345", fg="#fea").pack(anchor="sw")
-key = Entry(keyFrame,font=("", 12, "bold"))
-key.pack()
-
-asd.mainloop()
+if __name__ == "__main__":
+    
+    saved = True
+    
+    asd = Tk()    
+    asd.geometry(f"800x600+{asd.winfo_screenwidth()//2-400}+{asd.winfo_screenheight()//2-300}")
+    asd.resizable(False, False)
+    asd.title(":Encoto:")
+    top = Frame(asd, bg="#333")
+    top.pack(fill="x")
+    body = Frame(asd, bg="#333")
+    body.pack(fill="both", expand=True)
+    low = Frame(asd, bg="#345")
+    low.pack(fill="x")
+    
+    Label(top, text=":: Encoto ::", font=("",32,""), bg="#333", fg="#fea" ).pack()
+    
+    can = Canvas(body, bg="#333", borderwidth=10)
+    can.pack(expand=True, fill="both")
+    
+    selectAndSaveFrame = Frame(low, bg="#345")
+    selectAndSaveFrame.pack(side="right", padx=10)
+    openButton = Button(selectAndSaveFrame, text = "Choose Photo", font=("", 12, "italic"), width=13, command=openImageAsMatrix)
+    openButton.pack()
+    saveButton = Button(selectAndSaveFrame, text = "Save Photo", font=("", 12, "italic"), width=13,   command=saveImagefromMatrix)
+    saveButton.pack(pady=(5,0))
+    saveButton.config(state="d")
+    
+    encDecFrame = Frame(low, bg="#345")
+    encDecFrame.pack(side="left", padx=10)
+    encButton = Button(encDecFrame, text = "<< Encrypting >>", font=("", 12, "bold"), command=(lambda:enc(imgList)))
+    encButton.pack(side="left", padx=(10,0))
+    encButton.config(state="d")
+    decButton = Button(encDecFrame, text = ">> Decrypting <<", font=("", 12, "bold"), command=(lambda:dec(imgList)))
+    decButton.pack(side="left", padx=(10,0))
+    decButton.config(state="d")
+    
+    
+    keyFrame = Frame(low, bg="#345")
+    keyFrame.pack( padx=10, pady=30)
+    Label(keyFrame, text="Encr Key:",font=("", 10, "bold"), bg="#345", fg="#fea").pack(anchor="sw")
+    key = Entry(keyFrame,font=("", 12, "bold"), show="*")
+    key.pack(side="left")
+    
+    cKey = Checkbutton(keyFrame, bg="#345", command=showKey, activebackground="#345")
+    cKey.pack(side="right")
+    cKey.select()
+    
+    asd.mainloop()

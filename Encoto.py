@@ -3,7 +3,7 @@ from numpy import array,uint8
 from hashlib import md5
 from tkinter import Tk, Frame, Canvas, Label, Entry, Button
 from tkinter.messagebox import showerror
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfile
 
 
 def matrixShuf(ph:list, hashMap:list, step=0):
@@ -158,7 +158,6 @@ asd = Tk()
 asd.geometry(f"800x600+{asd.winfo_screenwidth()//2-400}+{asd.winfo_screenheight()//2-300}")
 asd.resizable(False, False)
 asd.title(":Encoto:")
-
 top = Frame(asd, bg="#333")
 top.pack(fill="x")
 body = Frame(asd, bg="#333")
@@ -167,13 +166,24 @@ low = Frame(asd, bg="#345")
 low.pack(fill="x")
 
 Label(top, text=":: Encoto ::", font=("",32,""), bg="#333", fg="#fea" ).pack()
+
 can = Canvas(body, bg="#333", borderwidth=10)
 can.pack(expand=True, fill="both")
-Button(low, text = "Choose Image", font=("", 12, "italic"), command=openImageAsMatrix).pack(side="right" ,padx=(0,10))
-Button(low, text = "<< Encrypting >>", font=("", 12, "bold"), command=(lambda:enc(imgList))).pack(side="left", padx=(10,0))
-Button(low, text = ">> Decrypting <<", font=("", 12, "bold"), command=(lambda:dec(imgList))).pack(side="left", padx=(10,0))
-Label(low, text="Encr Key:",font=("", 10, "bold"), bg="#345", fg="#fea").pack(anchor="s",expand=True, padx=(0,120))
-key = Entry(low,font=("", 12, "bold"))
-key.pack(anchor="center",expand=True, pady=(0,35))
+
+selectAndSaveFrame = Frame(low, bg="#345")
+selectAndSaveFrame.pack(side="right", padx=10)
+Button(selectAndSaveFrame, text = "Choose Photo", font=("", 12, "italic"), width=13, command=openImageAsMatrix).pack()
+Button(selectAndSaveFrame, text = "Save Photo", font=("", 12, "italic"), width=13).pack(pady=(5,0))
+
+encDecFrame = Frame(low, bg="#345")
+encDecFrame.pack(side="left", padx=10)
+Button(encDecFrame, text = "<< Encrypting >>", font=("", 12, "bold"), command=(lambda:enc(imgList))).pack(side="left", padx=(10,0))
+Button(encDecFrame, text = ">> Decrypting <<", font=("", 12, "bold"), command=(lambda:dec(imgList))).pack(side="left", padx=(10,0))
+
+keyFrame = Frame(low, bg="#345")
+keyFrame.pack( padx=10, pady=30)
+Label(keyFrame, text="Encr Key:",font=("", 10, "bold"), bg="#345", fg="#fea").pack(anchor="sw")
+key = Entry(keyFrame,font=("", 12, "bold"))
+key.pack()
 
 asd.mainloop()

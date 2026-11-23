@@ -1,9 +1,9 @@
 from PIL import Image, ImageTk
-from numpy import array,uint8
+from numpy import array,uint8, uint16
 from hashlib import md5
 from tkinter import Tk, Frame, Canvas, Label, Entry, Button
 from tkinter.messagebox import showerror
-from tkinter.filedialog import askopenfilename, asksaveasfile
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 
 def matrixShuf(ph:list, hashMap:list, step=0):
@@ -35,7 +35,8 @@ def matrixShuf(ph:list, hashMap:list, step=0):
         step += 1        
     ph.clear()    
     ph.extend( phMatrix.tolist() )
-    imgMatrix = list2Matrix(ph)    
+    imgMatrix = list2Matrix(ph)  
+    
 
 
 def matrixUnShuf(ph:list, hashMap:list, step=0):
@@ -66,6 +67,7 @@ def matrixUnShuf(ph:list, hashMap:list, step=0):
     ph.clear()    
     ph.extend( phMatrix.tolist() )        
     imgMatrix = list2Matrix(ph)
+    
 
 def enc(ph:list):
     global imgList, imgMatrix
@@ -114,18 +116,27 @@ def list2Matrix(imgList):
 
 def openImageAsMatrix():
     global imgMatrix, imgList
-    extensions = [".jpg", ",jpeg", ".png"]
+    
+    extensions = ["*.jpg; *.jpeg", "*.png"]
     fileTypes = []
     for i in extensions:
         fileTypes.append((i[1:], "JPG or PNG Image"))
         
-    path = askopenfilename(title = "Select Photo", filetypes = fileTypes)
+    path = askopenfilename(title = "Select Photo", filetypes = (("Image Files","*.png;*.jpg;*.jpeg"),))
     if(path):             
         imgPil = Image.open(path)
         imgMatrix = array(imgPil, dtype=uint8)
         imgList = matrix2List(imgMatrix)
         showImageCanvas(imgMatrix)
 
+def saveImagefromMatrix():
+    global imgMatrix        
+    path = asksaveasfilename(title="Save Photo", filetypes=(("PNG Image files","*.png"),))
+    if(path):                
+        pilImage = Image.fromarray(uint8(imgMatrix))
+        
+        pilImage.save(path.replace(".png", "")+".png")
+    #pilImage.save("path\\enc.png")
 
 def scaleImage(img:Image, maxX,maxY):
     x,y = img.size
@@ -143,7 +154,6 @@ def showImageCanvas(imgMatrix):
     tkImage = ImageTk.PhotoImage(pilImage)    
     can.create_image(0,0, anchor="nw", image=tkImage)
     
-    #pilImage.save("path\\enc.png")
 
 
 def restore():         
@@ -173,7 +183,7 @@ can.pack(expand=True, fill="both")
 selectAndSaveFrame = Frame(low, bg="#345")
 selectAndSaveFrame.pack(side="right", padx=10)
 Button(selectAndSaveFrame, text = "Choose Photo", font=("", 12, "italic"), width=13, command=openImageAsMatrix).pack()
-Button(selectAndSaveFrame, text = "Save Photo", font=("", 12, "italic"), width=13).pack(pady=(5,0))
+Button(selectAndSaveFrame, text = "Save Photo", font=("", 12, "italic"), width=13,   command=saveImagefromMatrix).pack(pady=(5,0))
 
 encDecFrame = Frame(low, bg="#345")
 encDecFrame.pack(side="left", padx=10)

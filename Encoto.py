@@ -14,7 +14,11 @@ def matrixShuf(ph:list, hashMap:list, step=0):
     r = x / (hashMap.__len__() / y)    
     phMatrix = array(ph)    
     
-    for go in range(x):                  
+    for go in range(x):   
+        
+        progressBar.config(value=(100/x)*go)
+        progressBar.update()
+        
         # shuffle rows down
         p = 0
         i = 0             
@@ -46,7 +50,10 @@ def matrixUnShuf(ph:list, hashMap:list, step=0):
     phMatrix = array(ph)        
     step = x-1    
     for go in range(x): 
-
+        
+        progressBar.config(value=(100/x)*go)
+        progressBar.update()        
+        
         # Unshuffle Columns down
         p = 31      
         j = r * 31    
@@ -83,8 +90,11 @@ def enc(ph:list):
     for ch in hashKey:                
         move.append(ord(ch) % x)
     
+    progressBar.place(x=10, y=15) 
     matrixShuf(ph, move)    
-    showImageCanvas(imgMatrix)    
+    showImageCanvas(imgMatrix) 
+    progressBar.config(value=0)
+    progressBar.place_forget()
 
 def dec(ph:list):
     global imgList, imgMatrix
@@ -102,10 +112,11 @@ def dec(ph:list):
         move.append(ord(ch) % x) 
     
     
-    
+    progressBar.place(x=10, y=15)
     matrixUnShuf(ph, move)
     showImageCanvas(imgMatrix)
-
+    progressBar.config(value=0)
+    progressBar.place_forget()
 
 def matrix2List(imgMatrix):    
     imgList = imgMatrix.tolist()
@@ -175,8 +186,7 @@ def showKey():
     else:
         key.config(show="*")
         cKey.select()
-    
-        
+
 
 #######################
 if __name__ == "__main__":
@@ -186,7 +196,8 @@ if __name__ == "__main__":
     asd = Tk()    
     asd.geometry(f"800x600+{asd.winfo_screenwidth()//2-400}+{asd.winfo_screenheight()//2-300}")
     asd.resizable(False, False)
-    asd.title(":Encoto:")
+    asd.title(":Encoto:")    
+    
     top = Frame(asd, bg="#333")
     top.pack(fill="x")
     body = Frame(asd, bg="#333")
@@ -195,6 +206,9 @@ if __name__ == "__main__":
     low.pack(fill="x")
     
     Label(top, text=":: Encoto ::", font=("",32,""), bg="#333", fg="#fea" ).pack()
+    progressBar = Progressbar(top, value=0, length=200)
+    
+    
     
     can = Canvas(body, bg="#333", borderwidth=10)
     can.pack(expand=True, fill="both")
@@ -227,4 +241,4 @@ if __name__ == "__main__":
     cKey.pack(side="right")
     cKey.select()
     
-    asd.mainloop()
+    asd.mainloop()    
